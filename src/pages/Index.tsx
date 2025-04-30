@@ -1,11 +1,25 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useChurch } from "@/context/ChurchContext";
 
 const Index = () => {
+  const { churchData } = useChurch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (churchData) {
+      navigate("/home");
+    } else {
+      navigate("/login");
+    }
+  }, [churchData, navigate]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="min-h-screen flex items-center justify-center ebd-gradient">
+      <div className="text-center text-white">
+        <h1 className="text-4xl font-bold mb-2">EBD</h1>
+        <p className="text-xl">Carregando...</p>
       </div>
     </div>
   );
