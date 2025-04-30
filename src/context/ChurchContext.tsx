@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode } from "react";
 
 interface Member {
@@ -19,6 +18,7 @@ interface ChurchContextType {
   churchData: ChurchData | null;
   setChurchInfo: (name: string, sector: string) => void;
   addMember: (name: string) => void;
+  removeMember: (memberId: string) => void;
   updateAttendance: (memberId: string, weekIndex: number, isPresent: boolean) => void;
   addAnnouncement: (announcement: string) => void;
   removeAnnouncement: (index: number) => void;
@@ -56,6 +56,20 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
     const updatedChurchData = {
       ...churchData,
       members: [...churchData.members, newMember],
+    };
+    
+    setChurchData(updatedChurchData);
+    localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+  };
+
+  const removeMember = (memberId: string) => {
+    if (!churchData) return;
+    
+    const updatedMembers = churchData.members.filter(member => member.id !== memberId);
+    
+    const updatedChurchData = {
+      ...churchData,
+      members: updatedMembers,
     };
     
     setChurchData(updatedChurchData);
@@ -120,6 +134,7 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
         churchData,
         setChurchInfo,
         addMember,
+        removeMember,
         updateAttendance,
         addAnnouncement,
         removeAnnouncement,

@@ -7,10 +7,23 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
+import { Trash2 } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const AttendanceTab = () => {
-  const { churchData, addMember, updateAttendance } = useChurch();
+  const { churchData, addMember, updateAttendance, removeMember } = useChurch();
   const [newMemberName, setNewMemberName] = useState("");
+  const [memberToDelete, setMemberToDelete] = useState<{ id: string, name: string } | null>(null);
   const weeks = Array.from({ length: 13 }, (_, i) => i + 1);
 
   const handleAddMember = (e: React.FormEvent) => {
@@ -27,6 +40,17 @@ const AttendanceTab = () => {
 
   const handleAttendanceChange = (memberId: string, weekIndex: number, isChecked: boolean) => {
     updateAttendance(memberId, weekIndex, isChecked);
+  };
+
+  const handleDeleteMember = () => {
+    if (memberToDelete) {
+      removeMember(memberToDelete.id);
+      toast({
+        title: "Membro removido",
+        description: `${memberToDelete.name} foi removido da lista.`,
+      });
+      setMemberToDelete(null);
+    }
   };
 
   return (
@@ -73,6 +97,7 @@ const AttendanceTab = () => {
                       {week}
                     </TableHead>
                   ))}
+                  <TableHead className="w-16 text-center">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -93,11 +118,39 @@ const AttendanceTab = () => {
                         />
                       </TableCell>
                     ))}
+                    <TableCell className="text-center">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                            onClick={() => setMemberToDelete({ id: member.id, name: member.name })}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir {member.name} da lista? Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => setMemberToDelete(null)}>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteMember} className="bg-red-500 hover:bg-red-600">
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
                   </TableRow>
                 ))}
                 {churchData?.members.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center py-4 text-gray-500">
+                    <TableCell colSpan={15} className="text-center py-4 text-gray-500">
                       Nenhum membro adicionado ainda
                     </TableCell>
                   </TableRow>
