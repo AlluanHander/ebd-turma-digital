@@ -14,7 +14,8 @@ interface Visitor {
   date: string;
 }
 
-interface ChurchData {
+interface Class {
+  id: string;
   churchName: string;
   sector: string;
   members: Member[];
@@ -23,8 +24,18 @@ interface ChurchData {
   visitors: Visitor[];
 }
 
+interface SecretaryData {
+  username: string;
+  password: string;
+  name: string;
+  isLoggedIn: boolean;
+}
+
 interface ChurchContextType {
-  churchData: ChurchData | null;
+  churchData: Class | null;
+  allClasses: Class[];
+  isSecretary: boolean;
+  secretaryData: SecretaryData | null;
   setChurchInfo: (name: string, sector: string) => void;
   addMember: (name: string) => void;
   removeMember: (memberId: string) => void;
@@ -34,19 +45,45 @@ interface ChurchContextType {
   setTeacher: (teacherName: string) => void;
   addVisitor: (name: string) => void;
   removeVisitor: (visitorId: string) => void;
+  secretaryLogin: (username: string, password: string) => boolean;
+  secretaryLogout: () => void;
+  switchClass: (classId: string) => void;
   logout: () => void;
 }
 
 const ChurchContext = createContext<ChurchContextType | undefined>(undefined);
 
+// Secretary credentials (in real app, this would be in a database)
+const SECRETARY_CREDENTIALS = {
+  username: "secretario",
+  password: "123456",
+  name: "Secretário Geral"
+};
+
 export const ChurchProvider = ({ children }: { children: ReactNode }) => {
-  const [churchData, setChurchData] = useState<ChurchData | null>(() => {
+  const [churchData, setChurchData] = useState<Class | null>(() => {
     const savedData = localStorage.getItem("ebdChurchData");
     return savedData ? JSON.parse(savedData) : null;
   });
+  
+  const [allClasses, setAllClasses] = useState<Class[]>(() => {
+    const savedClasses = localStorage.getItem("ebdAllClasses");
+    return savedClasses ? JSON.parse(savedClasses) : [];
+  });
+  
+  const [isSecretary, setIsSecretary] = useState<boolean>(() => {
+    const savedSecretaryStatus = localStorage.getItem("ebdIsSecretary");
+    return savedSecretaryStatus ? JSON.parse(savedSecretaryStatus) : false;
+  });
+  
+  const [secretaryData, setSecretaryData] = useState<SecretaryData | null>(() => {
+    const savedSecretaryData = localStorage.getItem("ebdSecretaryData");
+    return savedSecretaryData ? JSON.parse(savedSecretaryData) : null;
+  });
 
   const setChurchInfo = (name: string, sector: string) => {
-    const newChurchData = {
+    const newClassData: Class = {
+      id: Date.now().toString(),
       churchName: name,
       sector: sector,
       members: [],
@@ -54,8 +91,17 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
       teacher: "",
       visitors: [],
     };
-    setChurchData(newChurchData);
-    localStorage.setItem("ebdChurchData", JSON.stringify(newChurchData));
+    
+    setChurchData(newClassData);
+    
+    // Also update allClasses to include this new class
+    const updatedClasses = [...allClasses, newClassData];
+    setAllClasses(updatedClasses);
+    
+    // Save to localStorage
+    localStorage.setItem("ebdChurchData", JSON.stringify(newClassData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
+    localStorage.setItem("ebdIsSecretary", JSON.stringify(false));
   };
 
   const addMember = (name: string) => {
@@ -73,7 +119,16 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
     };
     
     setChurchData(updatedChurchData);
+    
+    // Update class in allClasses as well
+    const updatedClasses = allClasses.map(classItem => 
+      classItem.id === updatedChurchData.id ? updatedChurchData : classItem
+    );
+    setAllClasses(updatedClasses);
+    
+    // Save to localStorage
     localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
   };
 
   const removeMember = (memberId: string) => {
@@ -87,7 +142,16 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
     };
     
     setChurchData(updatedChurchData);
+    
+    // Update class in allClasses as well
+    const updatedClasses = allClasses.map(classItem => 
+      classItem.id === updatedChurchData.id ? updatedChurchData : classItem
+    );
+    setAllClasses(updatedClasses);
+    
+    // Save to localStorage
     localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
   };
 
   const updateAttendance = (memberId: string, weekIndex: number, isPresent: boolean) => {
@@ -108,7 +172,16 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
     };
     
     setChurchData(updatedChurchData);
+    
+    // Update class in allClasses as well
+    const updatedClasses = allClasses.map(classItem => 
+      classItem.id === updatedChurchData.id ? updatedChurchData : classItem
+    );
+    setAllClasses(updatedClasses);
+    
+    // Save to localStorage
     localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
   };
 
   const addAnnouncement = (announcement: string) => {
@@ -120,7 +193,16 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
     };
     
     setChurchData(updatedChurchData);
+    
+    // Update class in allClasses as well
+    const updatedClasses = allClasses.map(classItem => 
+      classItem.id === updatedChurchData.id ? updatedChurchData : classItem
+    );
+    setAllClasses(updatedClasses);
+    
+    // Save to localStorage
     localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
   };
 
   const removeAnnouncement = (index: number) => {
@@ -134,7 +216,16 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
     };
     
     setChurchData(updatedChurchData);
+    
+    // Update class in allClasses as well
+    const updatedClasses = allClasses.map(classItem => 
+      classItem.id === updatedChurchData.id ? updatedChurchData : classItem
+    );
+    setAllClasses(updatedClasses);
+    
+    // Save to localStorage
     localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
   };
 
   const setTeacher = (teacherName: string) => {
@@ -146,7 +237,16 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
     };
     
     setChurchData(updatedChurchData);
+    
+    // Update class in allClasses as well
+    const updatedClasses = allClasses.map(classItem => 
+      classItem.id === updatedChurchData.id ? updatedChurchData : classItem
+    );
+    setAllClasses(updatedClasses);
+    
+    // Save to localStorage
     localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
   };
 
   const addVisitor = (name: string) => {
@@ -164,7 +264,16 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
     };
     
     setChurchData(updatedChurchData);
+    
+    // Update class in allClasses as well
+    const updatedClasses = allClasses.map(classItem => 
+      classItem.id === updatedChurchData.id ? updatedChurchData : classItem
+    );
+    setAllClasses(updatedClasses);
+    
+    // Save to localStorage
     localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
   };
 
   const removeVisitor = (visitorId: string) => {
@@ -178,18 +287,72 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
     };
     
     setChurchData(updatedChurchData);
+    
+    // Update class in allClasses as well
+    const updatedClasses = allClasses.map(classItem => 
+      classItem.id === updatedChurchData.id ? updatedChurchData : classItem
+    );
+    setAllClasses(updatedClasses);
+    
+    // Save to localStorage
     localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
+  };
+  
+  const secretaryLogin = (username: string, password: string) => {
+    if (username === SECRETARY_CREDENTIALS.username && password === SECRETARY_CREDENTIALS.password) {
+      const secretaryUserData = {
+        username,
+        password,
+        name: SECRETARY_CREDENTIALS.name,
+        isLoggedIn: true
+      };
+      
+      setIsSecretary(true);
+      setSecretaryData(secretaryUserData);
+      
+      localStorage.setItem("ebdIsSecretary", JSON.stringify(true));
+      localStorage.setItem("ebdSecretaryData", JSON.stringify(secretaryUserData));
+      
+      return true;
+    }
+    return false;
+  };
+  
+  const secretaryLogout = () => {
+    setIsSecretary(false);
+    setSecretaryData(null);
+    
+    localStorage.setItem("ebdIsSecretary", JSON.stringify(false));
+    localStorage.removeItem("ebdSecretaryData");
+  };
+  
+  const switchClass = (classId: string) => {
+    const selectedClass = allClasses.find(classItem => classItem.id === classId);
+    if (selectedClass) {
+      setChurchData(selectedClass);
+      localStorage.setItem("ebdChurchData", JSON.stringify(selectedClass));
+    }
   };
 
   const logout = () => {
     setChurchData(null);
+    // Do not clear allClasses when logging out
+    setIsSecretary(false);
+    setSecretaryData(null);
+    
     localStorage.removeItem("ebdChurchData");
+    localStorage.setItem("ebdIsSecretary", JSON.stringify(false));
+    localStorage.removeItem("ebdSecretaryData");
   };
 
   return (
     <ChurchContext.Provider
       value={{
         churchData,
+        allClasses,
+        isSecretary,
+        secretaryData,
         setChurchInfo,
         addMember,
         removeMember,
@@ -199,6 +362,9 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
         setTeacher,
         addVisitor,
         removeVisitor,
+        secretaryLogin,
+        secretaryLogout,
+        switchClass,
         logout,
       }}
     >

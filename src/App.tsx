@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Turma from "./pages/Turma";
+import Secretary from "./pages/Secretary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/home" element={<Home />} />
             <Route path="/turma" element={<Turma />} />
+            <Route path="/secretary" element={<Secretary />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
