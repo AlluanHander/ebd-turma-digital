@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode } from "react";
 
 interface Member {
@@ -7,11 +8,19 @@ interface Member {
   attendance: boolean[];
 }
 
+interface Visitor {
+  id: string;
+  name: string;
+  date: string;
+}
+
 interface ChurchData {
   churchName: string;
   sector: string;
   members: Member[];
   announcements: string[];
+  teacher: string;
+  visitors: Visitor[];
 }
 
 interface ChurchContextType {
@@ -22,6 +31,9 @@ interface ChurchContextType {
   updateAttendance: (memberId: string, weekIndex: number, isPresent: boolean) => void;
   addAnnouncement: (announcement: string) => void;
   removeAnnouncement: (index: number) => void;
+  setTeacher: (teacherName: string) => void;
+  addVisitor: (name: string) => void;
+  removeVisitor: (visitorId: string) => void;
   logout: () => void;
 }
 
@@ -39,6 +51,8 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
       sector: sector,
       members: [],
       announcements: [],
+      teacher: "",
+      visitors: [],
     };
     setChurchData(newChurchData);
     localStorage.setItem("ebdChurchData", JSON.stringify(newChurchData));
@@ -123,6 +137,50 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
   };
 
+  const setTeacher = (teacherName: string) => {
+    if (!churchData) return;
+    
+    const updatedChurchData = {
+      ...churchData,
+      teacher: teacherName,
+    };
+    
+    setChurchData(updatedChurchData);
+    localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+  };
+
+  const addVisitor = (name: string) => {
+    if (!churchData) return;
+    
+    const newVisitor: Visitor = {
+      id: Date.now().toString(),
+      name,
+      date: new Date().toLocaleDateString('pt-BR'),
+    };
+    
+    const updatedChurchData = {
+      ...churchData,
+      visitors: [...churchData.visitors || [], newVisitor],
+    };
+    
+    setChurchData(updatedChurchData);
+    localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+  };
+
+  const removeVisitor = (visitorId: string) => {
+    if (!churchData) return;
+    
+    const updatedVisitors = churchData.visitors.filter(visitor => visitor.id !== visitorId);
+    
+    const updatedChurchData = {
+      ...churchData,
+      visitors: updatedVisitors,
+    };
+    
+    setChurchData(updatedChurchData);
+    localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+  };
+
   const logout = () => {
     setChurchData(null);
     localStorage.removeItem("ebdChurchData");
@@ -138,6 +196,9 @@ export const ChurchProvider = ({ children }: { children: ReactNode }) => {
         updateAttendance,
         addAnnouncement,
         removeAnnouncement,
+        setTeacher,
+        addVisitor,
+        removeVisitor,
         logout,
       }}
     >
