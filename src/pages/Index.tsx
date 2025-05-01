@@ -1,7 +1,6 @@
-
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useChurch } from "@/context/ChurchContext";
+import { useChurch } from "@/context/ChurchContext"; // Keep using the same import path
 
 const Index = () => {
   const { churchData } = useChurch();
