@@ -1,18 +1,21 @@
+
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useChurch } from "@/context/ChurchContext"; // Keep using the same import path
+import { useChurch } from "@/context"; 
+import { useTeacher } from "@/context";
 
 const Index = () => {
   const { churchData } = useChurch();
+  const { teacherData } = useTeacher();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (churchData) {
+    if (churchData || teacherData) {
       navigate("/home");
     } else {
       navigate("/login");
     }
-  }, [churchData, navigate]);
+  }, [churchData, teacherData, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center ebd-gradient">
