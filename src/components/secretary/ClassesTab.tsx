@@ -13,12 +13,7 @@ interface ClassesTabProps {
 
 const ClassesTab: React.FC<ClassesTabProps> = ({ allClasses, switchClass }) => {
   const navigate = useNavigate();
-  
-  const handleManageClass = (classId: string) => {
-    switchClass(classId);
-    navigate("/turma");
-  };
-  
+
   return (
     <Card>
       <CardHeader>
@@ -57,9 +52,11 @@ const ClassesTab: React.FC<ClassesTabProps> = ({ allClasses, switchClass }) => {
                     <TableCell>{cls.announcements.length}</TableCell>
                     <TableCell>
                       <Button 
-                        variant="outline" 
                         size="sm"
-                        onClick={() => handleManageClass(cls.id)}
+                        onClick={() => {
+                          switchClass(cls.id);
+                          navigate("/turma");
+                        }}
                       >
                         Gerenciar
                       </Button>

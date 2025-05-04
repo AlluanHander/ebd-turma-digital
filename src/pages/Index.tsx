@@ -1,26 +1,18 @@
-
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useChurch } from "@/context"; 
-import { useTeacher } from "@/context";
+import { useChurch } from "@/context/ChurchContext"; // Keep using the same import path
 
 const Index = () => {
   const { churchData } = useChurch();
-  const { teacherData } = useTeacher();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set default church name if it doesn't exist
-    if (!localStorage.getItem("ebdChurchName")) {
-      localStorage.setItem("ebdChurchName", "Igreja EBD");
-    }
-    
-    if (churchData || teacherData) {
+    if (churchData) {
       navigate("/home");
     } else {
       navigate("/login");
     }
-  }, [churchData, teacherData, navigate]);
+  }, [churchData, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center ebd-gradient">
