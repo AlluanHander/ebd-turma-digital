@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,6 +12,13 @@ interface ClassesTabProps {
 }
 
 const ClassesTab: React.FC<ClassesTabProps> = ({ allClasses, switchClass }) => {
+  const navigate = useNavigate();
+  
+  const handleManageClass = (classId: string) => {
+    switchClass(classId);
+    navigate("/turma");
+  };
+  
   return (
     <Card>
       <CardHeader>
@@ -29,12 +37,13 @@ const ClassesTab: React.FC<ClassesTabProps> = ({ allClasses, switchClass }) => {
                 <TableHead>Professor</TableHead>
                 <TableHead>Qtd. Membros</TableHead>
                 <TableHead>Qtd. Avisos</TableHead>
+                <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {allClasses.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4 text-gray-500">
+                  <TableCell colSpan={6} className="text-center py-4 text-gray-500">
                     Nenhuma turma cadastrada ainda
                   </TableCell>
                 </TableRow>
@@ -46,6 +55,15 @@ const ClassesTab: React.FC<ClassesTabProps> = ({ allClasses, switchClass }) => {
                     <TableCell>{cls.teacher || "Não definido"}</TableCell>
                     <TableCell>{cls.members.length}</TableCell>
                     <TableCell>{cls.announcements.length}</TableCell>
+                    <TableCell>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleManageClass(cls.id)}
+                      >
+                        Gerenciar
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}

@@ -72,7 +72,16 @@ const Home = () => {
               {churchData.churchName} - {churchData.sector}
             </p>
           </div>
-          <InventoryManager />
+          <div className="flex gap-2">
+            <Button 
+              variant="default"
+              className="bg-ebd-blue hover:bg-ebd-navy"
+              onClick={() => navigate('/turma')}
+            >
+              Gerenciar Turma
+            </Button>
+            <InventoryManager />
+          </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
