@@ -10,6 +10,11 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Set default church name if it doesn't exist
+    if (!localStorage.getItem("ebdChurchName")) {
+      localStorage.setItem("ebdChurchName", "Igreja EBD");
+    }
+    
     if (churchData || teacherData) {
       navigate("/home");
     } else {
