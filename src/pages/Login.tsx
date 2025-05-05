@@ -9,7 +9,7 @@ import { useChurch } from "@/context/ChurchContext";
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, Key, Lock } from "lucide-react";
+import { Mail, Key, Lock, User } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
