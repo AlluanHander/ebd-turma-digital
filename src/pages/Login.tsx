@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -361,6 +360,20 @@ const Login = () => {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+            </div>
+            
+            {/* Registration link - New addition */}
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Primeiro acesso?{" "}
+                <Button 
+                  variant="link" 
+                  className="text-sm p-0 text-ebd-blue" 
+                  onClick={() => navigate("/registration")}
+                >
+                  Cadastre-se aqui
+                </Button>
+              </p>
             </div>
           </CardContent>
         </Card>

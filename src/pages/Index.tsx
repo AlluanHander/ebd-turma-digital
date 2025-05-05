@@ -18,7 +18,8 @@ const Index = () => {
       // redirect to login page with the saved church name
       navigate("/login");
     } else {
-      // If no saved data, go to login
+      // If no saved data, go to registration for first access
+      // or login for returning users
       navigate("/login");
     }
   }, [churchData, navigate, setChurchInfo]);

@@ -8,6 +8,7 @@ import { ChurchProvider } from "./context/ChurchProvider";
 import { InventoryProvider } from "./context/InventoryContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import Registration from "./pages/Registration";
 import Home from "./pages/Home";
 import Turma from "./pages/Turma";
 import Secretary from "./pages/Secretary";
@@ -26,6 +27,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/registration" element={<Registration />} />
               <Route path="/home" element={<Home />} />
               <Route path="/turma" element={<Turma />} />
               <Route path="/secretary" element={<Secretary />} />
