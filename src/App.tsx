@@ -30,6 +30,7 @@ const App = () => (
               <Route path="/registration" element={<Registration />} />
               <Route path="/home" element={<Home />} />
               <Route path="/classe" element={<Classe />} />
+              <Route path="/turma" element={<Classe />} /> {/* Add this route to handle redirects from old URLs */}
               <Route path="/secretary" element={<Secretary />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
