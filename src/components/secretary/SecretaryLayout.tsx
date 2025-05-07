@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useChurch } from "@/context";
 import NavBar from "@/components/NavBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, FileText, Users } from "lucide-react";
+import { Calendar, FileText, Users, Cake } from "lucide-react";
 
 import ClassSelector from "@/components/secretary/ClassSelector";
 import ClassesTab from "@/components/secretary/ClassesTab";
 import AttendanceTab from "@/components/secretary/AttendanceTab";
 import StatisticsTab from "@/components/secretary/StatisticsTab";
+import BirthdaysTab from "@/components/secretary/BirthdaysTab";
 
 interface SecretaryLayoutProps {
   activeTab: string;
@@ -47,7 +48,7 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
             Painel do Secretário
           </h1>
           <p className="text-gray-600 mt-2">
-            Gerencie todas as turmas da EBD
+            Gerencie todas as classes da EBD
           </p>
         </div>
 
@@ -64,10 +65,10 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
           {/* Main content area */}
           <div className="lg:w-3/4">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsList className="grid w-full grid-cols-4 mb-8">
                 <TabsTrigger value="classes" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  <span>Turmas</span>
+                  <span>Classes</span>
                 </TabsTrigger>
                 <TabsTrigger value="attendance" className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
@@ -76,6 +77,10 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
                 <TabsTrigger value="statistics" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   <span>Estatísticas</span>
+                </TabsTrigger>
+                <TabsTrigger value="birthdays" className="flex items-center gap-2">
+                  <Cake className="h-4 w-4" />
+                  <span>Aniversários</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -92,6 +97,10 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
 
               <TabsContent value="statistics">
                 <StatisticsTab allClasses={allClasses} />
+              </TabsContent>
+              
+              <TabsContent value="birthdays">
+                <BirthdaysTab />
               </TabsContent>
             </Tabs>
           </div>

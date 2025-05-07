@@ -1,4 +1,3 @@
-
 import React, { useState, ReactNode } from "react";
 import { ChurchContext } from "./ChurchContext";
 import { Class, SecretaryData } from "@/types/ChurchTypes";
@@ -43,14 +42,38 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
     localStorage.setItem("ebdIsSecretary", JSON.stringify(false));
   };
 
-  const addMember = (name: string) => {
+  const addMember = (name: string, birthday?: string) => {
     if (!churchData) return;
     
-    const newMember = createNewMember(name);
+    const newMember = createNewMember(name, birthday);
     
     const updatedChurchData = {
       ...churchData,
       members: [...churchData.members, newMember],
+    };
+    
+    setChurchData(updatedChurchData);
+    
+    const updatedClasses = updateClassInList(allClasses, updatedChurchData);
+    setAllClasses(updatedClasses);
+    
+    localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
+  };
+
+  const updateMemberBirthday = (memberId: string, birthday: string) => {
+    if (!churchData) return;
+    
+    const updatedMembers = churchData.members.map(member => {
+      if (member.id === memberId) {
+        return { ...member, birthday };
+      }
+      return member;
+    });
+    
+    const updatedChurchData = {
+      ...churchData,
+      members: updatedMembers,
     };
     
     setChurchData(updatedChurchData);
@@ -264,6 +287,7 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
         secretaryLogin,
         secretaryLogout,
         switchClass,
+        updateMemberBirthday,
         logout,
       }}
     >

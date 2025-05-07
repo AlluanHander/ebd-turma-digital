@@ -4,6 +4,7 @@ export interface Member {
   name: string;
   // Array of 13 weeks, true for present, false for absent
   attendance: boolean[];
+  birthday?: string; // Add birthday field
 }
 
 export interface Visitor {
@@ -35,7 +36,7 @@ export interface ChurchContextType {
   isSecretary: boolean;
   secretaryData: SecretaryData | null;
   setChurchInfo: (name: string, sector: string) => void;
-  addMember: (name: string) => void;
+  addMember: (name: string, birthday?: string) => void;
   removeMember: (memberId: string) => void;
   updateAttendance: (memberId: string, weekIndex: number, isPresent: boolean) => void;
   addAnnouncement: (announcement: string) => void;
@@ -46,5 +47,6 @@ export interface ChurchContextType {
   secretaryLogin: (username: string, password: string) => boolean;
   secretaryLogout: () => void;
   switchClass: (classId: string) => void;
+  updateMemberBirthday: (memberId: string, birthday: string) => void;
   logout: () => void;
 }
