@@ -13,32 +13,55 @@ import Home from "./pages/Home";
 import Classe from "./pages/Classe";
 import Secretary from "./pages/Secretary";
 import NotFound from "./pages/NotFound";
+import { useEffect } from "react";
+
+// Initialize capacitor if available
+const initCapacitor = async () => {
+  if (window.Capacitor) {
+    try {
+      const { SplashScreen } = await import('@capacitor/splash-screen');
+      await SplashScreen.hide();
+      
+      // Set status bar style if available
+      const { StatusBar } = await import('@capacitor/status-bar');
+      StatusBar.setStyle({ style: 'dark' });
+    } catch (e) {
+      console.error('Error initializing Capacitor plugins', e);
+    }
+  }
+};
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ChurchProvider>
-      <InventoryProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/registration" element={<Registration />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/classe" element={<Classe />} />
-              <Route path="/turma" element={<Classe />} /> {/* Add this route to handle redirects from old URLs */}
-              <Route path="/secretary" element={<Secretary />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </InventoryProvider>
-    </ChurchProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  useEffect(() => {
+    initCapacitor();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ChurchProvider>
+        <InventoryProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/registration" element={<Registration />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/classe" element={<Classe />} />
+                <Route path="/turma" element={<Classe />} /> {/* Add this route to handle redirects from old URLs */}
+                <Route path="/secretary" element={<Secretary />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </InventoryProvider>
+      </ChurchProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
