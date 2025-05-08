@@ -26,7 +26,8 @@ const initCapacitor = async () => {
       // Set status bar style if available
       if (Capacitor.isPluginAvailable('StatusBar')) {
         const { StatusBar } = await import('@capacitor/status-bar');
-        await StatusBar.setStyle({ style: 'dark' });
+        // Fix: Use the proper enum value instead of string literal
+        await StatusBar.setStyle({ style: 'DARK' });
       }
     } catch (e) {
       console.error('Error initializing Capacitor plugins', e);
