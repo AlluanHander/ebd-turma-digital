@@ -14,17 +14,20 @@ import Classe from "./pages/Classe";
 import Secretary from "./pages/Secretary";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
 
 // Initialize capacitor if available
 const initCapacitor = async () => {
-  if (window.Capacitor) {
+  if (Capacitor && Capacitor.isPluginAvailable('SplashScreen')) {
     try {
       const { SplashScreen } = await import('@capacitor/splash-screen');
       await SplashScreen.hide();
       
       // Set status bar style if available
-      const { StatusBar } = await import('@capacitor/status-bar');
-      StatusBar.setStyle({ style: 'dark' });
+      if (Capacitor.isPluginAvailable('StatusBar')) {
+        const { StatusBar } = await import('@capacitor/status-bar');
+        await StatusBar.setStyle({ style: 'dark' });
+      }
     } catch (e) {
       console.error('Error initializing Capacitor plugins', e);
     }
