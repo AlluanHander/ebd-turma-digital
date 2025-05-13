@@ -6,7 +6,7 @@ import { toast } from "@/hooks/use-toast";
 export const checkAndResetInventory = (inventory: Inventory): Inventory => {
   const today = startOfDay(new Date());
   
-  // If first time using the app or no last reset date
+  // Se for a primeira vez usando o app ou não houver data de último reset
   if (!inventory.lastResetDate) {
     return {
       ...inventory,
@@ -16,17 +16,18 @@ export const checkAndResetInventory = (inventory: Inventory): Inventory => {
   
   const lastResetDate = parseISO(inventory.lastResetDate);
   
-  // Check if today is Sunday and we haven't reset today
+  // Verificar se hoje é domingo e não reiniciamos hoje ainda
   if (isSunday(today) && !isToday(lastResetDate)) {
-    // If it's been at least a day since the last reset
+    // Se passou pelo menos um dia desde o último reset
     if (differenceInDays(today, lastResetDate) >= 1) {
-      // Show toast notification
+      // Mostrar notificação toast
       toast({
         title: "Reinício automático",
         description: "O inventário foi reiniciado para o novo domingo de EBD.",
+        duration: 5000, // Exibir por 5 segundos
       });
       
-      // Reset inventory
+      // Reiniciar inventário
       return {
         bibles: 0,
         magazines: 0, 
@@ -36,6 +37,6 @@ export const checkAndResetInventory = (inventory: Inventory): Inventory => {
     }
   }
   
-  // No reset needed
+  // Sem necessidade de reiniciar
   return inventory;
 };

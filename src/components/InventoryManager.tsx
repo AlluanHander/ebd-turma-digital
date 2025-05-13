@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useInventory } from "@/context/InventoryContext";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { MinusCircle, PlusCircle, Book, BookOpen, DollarSign, RefreshCw, Calendar } from "lucide-react";
-import { format, parseISO, nextSunday } from "date-fns";
+import { format, parseISO, nextSunday, isSunday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Dialog,
@@ -17,35 +16,38 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const InventoryManager: React.FC = () => {
   const { inventory, updateInventory, incrementItem, decrementItem } = useInventory();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleInputChange = (field: keyof typeof inventory, value: string) => {
-    if (field === "lastResetDate") return; // Protect lastResetDate
+    if (field === "lastResetDate") return; // Proteger lastResetDate
     
     const numValue = parseInt(value) || 0;
     updateInventory(field, numValue >= 0 ? numValue : 0);
   };
 
-  // Calculate next reset date (next Sunday)
+  // Calcular próxima data de reinicialização (próximo domingo)
   const getNextResetDate = () => {
     const today = new Date();
     const next = nextSunday(today);
     return format(next, "dd 'de' MMMM", { locale: ptBR });
   };
 
-  // Format the last reset date
+  // Formatar a data da última reinicialização
   const getLastResetDate = () => {
     if (!inventory.lastResetDate) return "Nunca";
     try {
-      return format(parseISO(inventory.lastResetDate), "dd/MM/yyyy", { locale: ptBR });
+      return format(parseISO(inventory.lastResetDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     } catch (e) {
       return "Data inválida";
     }
   };
+
+  // Verificar se hoje é domingo (dia de reinicialização)
+  const isTodaySunday = isSunday(new Date());
 
   return (
     <>
@@ -66,10 +68,17 @@ const InventoryManager: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <Alert className="mb-4 bg-blue-50 border-blue-200">
-            <Calendar className="h-4 w-4 text-blue-500" />
-            <AlertDescription className="text-sm text-blue-700">
-              O inventário será zerado automaticamente todo domingo.
+          <Alert className={`mb-4 ${isTodaySunday ? "bg-blue-100 border-blue-300" : "bg-blue-50 border-blue-200"}`}>
+            <Calendar className={`h-4 w-4 ${isTodaySunday ? "text-blue-600" : "text-blue-500"}`} />
+            <AlertTitle className={`${isTodaySunday ? "text-blue-800" : "text-blue-700"}`}>
+              Sistema de reinicialização automática
+            </AlertTitle>
+            <AlertDescription className={`text-sm ${isTodaySunday ? "text-blue-800" : "text-blue-700"}`}>
+              {isTodaySunday ? (
+                <span className="font-medium">Hoje é domingo! O inventário será reiniciado automaticamente.</span>
+              ) : (
+                "O inventário será zerado automaticamente todo domingo."
+              )}
               <div className="mt-1">
                 <span className="font-semibold">Último reset:</span> {getLastResetDate()}
               </div>
@@ -210,7 +219,8 @@ const InventoryManager: React.FC = () => {
                 setIsDialogOpen(false);
                 toast({
                   title: "Inventário atualizado",
-                  description: "Os dados foram salvos com sucesso!"
+                  description: "Os dados foram salvos com sucesso!",
+                  duration: 3000, // 3 segundos
                 });
               }}
             >
