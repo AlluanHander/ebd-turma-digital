@@ -9,6 +9,7 @@ const Secretary = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("classes");
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
+  const [currentWeek, setCurrentWeek] = useState<number>(0);
 
   useEffect(() => {
     // Redirect if not a secretary
@@ -34,6 +35,8 @@ const Secretary = () => {
       setActiveTab={setActiveTab}
       selectedClassId={selectedClassId}
       setSelectedClassId={setSelectedClassId}
+      currentWeek={currentWeek}
+      setCurrentWeek={setCurrentWeek}
     />
   );
 };

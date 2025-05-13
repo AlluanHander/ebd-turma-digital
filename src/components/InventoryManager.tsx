@@ -3,9 +3,11 @@ import React, { useState } from "react";
 import { useInventory } from "@/context/InventoryContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { MinusCircle, PlusCircle, Book, BookOpen, DollarSign } from "lucide-react";
+import { MinusCircle, PlusCircle, Book, BookOpen, DollarSign, RefreshCw, Calendar } from "lucide-react";
+import { format, parseISO, nextSunday } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   Dialog,
   DialogContent,
@@ -13,15 +15,36 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const InventoryManager: React.FC = () => {
   const { inventory, updateInventory, incrementItem, decrementItem } = useInventory();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleInputChange = (field: keyof typeof inventory, value: string) => {
+    if (field === "lastResetDate") return; // Protect lastResetDate
+    
     const numValue = parseInt(value) || 0;
     updateInventory(field, numValue >= 0 ? numValue : 0);
+  };
+
+  // Calculate next reset date (next Sunday)
+  const getNextResetDate = () => {
+    const today = new Date();
+    const next = nextSunday(today);
+    return format(next, "dd 'de' MMMM", { locale: ptBR });
+  };
+
+  // Format the last reset date
+  const getLastResetDate = () => {
+    if (!inventory.lastResetDate) return "Nunca";
+    try {
+      return format(parseISO(inventory.lastResetDate), "dd/MM/yyyy", { locale: ptBR });
+    } catch (e) {
+      return "Data inválida";
+    }
   };
 
   return (
@@ -42,6 +65,19 @@ const InventoryManager: React.FC = () => {
               Controle a quantidade de bíblias, revistas e ofertas
             </DialogDescription>
           </DialogHeader>
+
+          <Alert className="mb-4 bg-blue-50 border-blue-200">
+            <Calendar className="h-4 w-4 text-blue-500" />
+            <AlertDescription className="text-sm text-blue-700">
+              O inventário será zerado automaticamente todo domingo.
+              <div className="mt-1">
+                <span className="font-semibold">Último reset:</span> {getLastResetDate()}
+              </div>
+              <div>
+                <span className="font-semibold">Próximo reset:</span> {getNextResetDate()}
+              </div>
+            </AlertDescription>
+          </Alert>
 
           <div className="grid gap-6 my-4">
             <Card>
@@ -159,7 +195,16 @@ const InventoryManager: React.FC = () => {
             </Card>
           </div>
 
-          <div className="flex justify-end">
+          <DialogFooter>
+            <Button 
+              variant="outline"
+              className="mr-2"
+              onClick={() => {
+                setIsDialogOpen(false);
+              }}
+            >
+              Cancelar
+            </Button>
             <Button 
               onClick={() => {
                 setIsDialogOpen(false);
@@ -169,9 +214,9 @@ const InventoryManager: React.FC = () => {
                 });
               }}
             >
-              Fechar
+              Salvar
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

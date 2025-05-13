@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Inventory } from "@/types/InventoryTypes";
+import { checkAndResetInventory } from "@/services/InventoryResetService";
 
 interface InventoryContextType {
   inventory: Inventory;
@@ -13,6 +14,7 @@ const defaultInventory: Inventory = {
   bibles: 0,
   magazines: 0,
   offerings: 0,
+  lastResetDate: new Date().toISOString(),
 };
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
@@ -35,12 +37,32 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
     return savedInventory ? JSON.parse(savedInventory) : defaultInventory;
   });
 
-  // Salvar no localStorage sempre que o inventário mudar
+  // Check for reset on component mount and when it's a new day
+  useEffect(() => {
+    const updatedInventory = checkAndResetInventory(inventory);
+    if (updatedInventory.lastResetDate !== inventory.lastResetDate) {
+      setInventory(updatedInventory);
+    }
+    
+    // Check every hour for a day change
+    const intervalId = setInterval(() => {
+      setInventory(prev => {
+        const updated = checkAndResetInventory(prev);
+        return updated;
+      });
+    }, 3600000); // 1 hour in milliseconds
+    
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Save to localStorage whenever inventory changes
   useEffect(() => {
     localStorage.setItem("ebdInventory", JSON.stringify(inventory));
   }, [inventory]);
 
   const updateInventory = (field: keyof Inventory, value: number) => {
+    if (field === "lastResetDate") return; // Protect lastResetDate from direct updates
+    
     setInventory((prev) => ({
       ...prev,
       [field]: value,
@@ -48,6 +70,8 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   };
 
   const incrementItem = (field: keyof Inventory) => {
+    if (field === "lastResetDate") return; // Protect lastResetDate from direct updates
+    
     setInventory((prev) => ({
       ...prev,
       [field]: prev[field] + 1,
@@ -55,6 +79,8 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   };
 
   const decrementItem = (field: keyof Inventory) => {
+    if (field === "lastResetDate") return; // Protect lastResetDate from direct updates
+    
     setInventory((prev) => ({
       ...prev,
       [field]: Math.max(0, prev[field] - 1),
