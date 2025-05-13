@@ -17,6 +17,8 @@ interface SecretaryLayoutProps {
   setActiveTab: (tab: string) => void;
   selectedClassId: string | null;
   setSelectedClassId: (classId: string | null) => void;
+  currentWeek: number;
+  setCurrentWeek: (week: number) => void;
 }
 
 const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
@@ -24,6 +26,8 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
   setActiveTab,
   selectedClassId,
   setSelectedClassId,
+  currentWeek,
+  setCurrentWeek,
 }) => {
   const { allClasses, switchClass, secretaryData, secretaryLogout } = useChurch();
   const navigate = useNavigate();
