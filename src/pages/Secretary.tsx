@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChurch } from "@/context";
 import SecretaryLayout from "@/components/secretary/SecretaryLayout";
+import { toast } from "@/hooks/use-toast";
 
 const Secretary = () => {
   const { isSecretary, allClasses, switchClass } = useChurch();

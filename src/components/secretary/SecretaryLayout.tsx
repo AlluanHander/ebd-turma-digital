@@ -11,6 +11,7 @@ import ClassesTab from "@/components/secretary/ClassesTab";
 import AttendanceTab from "@/components/secretary/AttendanceTab";
 import StatisticsTab from "@/components/secretary/StatisticsTab";
 import BirthdaysTab from "@/components/secretary/BirthdaysTab";
+import CalendarView from "@/components/CalendarView";
 
 interface SecretaryLayoutProps {
   activeTab: string;
@@ -57,12 +58,17 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left sidebar with class selection */}
-          <div className="lg:w-1/4">
+          {/* Left sidebar with class selection and calendar */}
+          <div className="lg:w-1/4 space-y-6">
             <ClassSelector 
               allClasses={allClasses}
               selectedClassId={selectedClassId}
               onClassChange={handleClassChange}
+            />
+            
+            <CalendarView 
+              currentWeek={currentWeek}
+              onWeekChange={setCurrentWeek}
             />
           </div>
 
