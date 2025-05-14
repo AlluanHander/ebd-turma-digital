@@ -5,16 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MinusCircle, PlusCircle } from "lucide-react";
 import { LucideIcon } from "lucide-react";
+import { Inventory } from "@/types/InventoryTypes";
 
 interface InventoryItemCardProps {
   title: string;
   description: string;
   value: number;
-  field: "bibles" | "magazines" | "offerings";
+  field: keyof Omit<Inventory, "lastResetDate">;
   icon: LucideIcon;
-  onIncrement: (field: string) => void;
-  onDecrement: (field: string) => void;
-  onInputChange: (field: string, value: string) => void;
+  onIncrement: (field: keyof Inventory) => void;
+  onDecrement: (field: keyof Inventory) => void;
+  onInputChange: (field: keyof Inventory, value: string) => void;
 }
 
 const InventoryItemCard: React.FC<InventoryItemCardProps> = ({
