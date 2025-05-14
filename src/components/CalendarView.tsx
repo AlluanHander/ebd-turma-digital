@@ -5,7 +5,8 @@ import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CalendarViewProps {
   currentWeek: number;
@@ -17,6 +18,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   onWeekChange
 }) => {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
   
   // Calcular a data para a semana especificada de EBD (considerando o primeiro domingo como início)
   const getDateForWeek = (weekIndex: number): Date => {
@@ -66,6 +68,28 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const isSundayClass = (date: Date) => {
     return isSunday(date);
   };
+
+  // Verificar se uma data é um domingo de EBD específico
+  const isEbdSunday = (checkDate: Date): number | null => {
+    if (!isSunday(checkDate)) return null;
+    
+    const matchingWeek = ebdDates.findIndex(ebdDate => 
+      ebdDate.date.getDate() === checkDate.getDate() && 
+      ebdDate.date.getMonth() === checkDate.getMonth() &&
+      ebdDate.date.getFullYear() === checkDate.getFullYear()
+    );
+    
+    return matchingWeek >= 0 ? matchingWeek : null;
+  };
+  
+  // Customizar o footer do dia
+  const renderDayContent = (day: Date) => {
+    const ebdWeek = isEbdSunday(day);
+    if (ebdWeek !== null) {
+      return <div className="text-[0.65rem] -mt-1 font-medium text-ebd-blue">Sem. {ebdWeek + 1}</div>;
+    }
+    return null;
+  };
   
   return (
     <Card className="border-ebd-blue/20 shadow-md">
@@ -73,6 +97,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         <CardTitle className="flex items-center gap-2">
           <CalendarIcon className="h-5 w-5 text-ebd-blue" />
           <span>Calendário de EBD</span>
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-ebd-blue/70 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Clique em uma data para navegar entre as semanas.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -81,7 +115,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             mode="single"
             selected={date}
             onSelect={handleDateSelect}
-            className="rounded-md border pointer-events-auto"
+            className="rounded-md border"
             locale={ptBR}
             modifiers={{
               sunday: isSundayClass
@@ -89,6 +123,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             modifiersClassNames={{
               sunday: "bg-ebd-blue/20 text-ebd-navy font-medium"
             }}
+            footer={hoveredDate && renderDayContent(hoveredDate)}
+            onDayMouseEnter={setHoveredDate}
+            onDayMouseLeave={() => setHoveredDate(null)}
           />
           
           <div className="space-y-2">
