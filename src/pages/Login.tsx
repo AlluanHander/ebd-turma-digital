@@ -8,7 +8,7 @@ import { useChurch } from "@/context/ChurchContext";
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, Key, Lock, User } from "lucide-react";
+import { Mail, Key, Lock, User, Trash2 } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -16,8 +16,20 @@ import {
   DialogFooter, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger 
+  DialogTrigger,
+  DialogClose
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Login = () => {
   // Common state
@@ -39,7 +51,7 @@ const Login = () => {
   // Active tab
   const [activeTab, setActiveTab] = useState("teacher");
   
-  const { setChurchInfo, secretaryLogin } = useChurch();
+  const { setChurchInfo, secretaryLogin, clearAllSecretaries } = useChurch();
   const navigate = useNavigate();
 
   // Load saved credentials on component mount
@@ -161,6 +173,24 @@ const Login = () => {
     
     // Clear email field
     setResetEmail("");
+  };
+
+  const handleClearAllData = () => {
+    // Limpar todos os secretários registrados
+    clearAllSecretaries();
+    
+    // Limpar localStorage
+    localStorage.removeItem("ebdAllClasses");
+    localStorage.removeItem("ebdChurchData");
+    localStorage.removeItem("ebdIsSecretary");
+    localStorage.removeItem("ebdSecretaryData");
+    localStorage.removeItem("ebdTeacherCredentials");
+    localStorage.removeItem("ebdSecretaryCredentials");
+    
+    toast({
+      title: "Dados limpos com sucesso!",
+      description: "Todos os registros foram removidos.",
+    });
   };
 
   return (
@@ -362,7 +392,7 @@ const Login = () => {
               </Dialog>
             </div>
             
-            {/* Registration link - New addition */}
+            {/* Registration link */}
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-600">
                 Primeiro acesso?{" "}
@@ -374,6 +404,34 @@ const Login = () => {
                   Cadastre-se aqui
                 </Button>
               </p>
+            </div>
+            
+            {/* Clear All Data Option */}
+            <div className="mt-4 border-t pt-4">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center justify-center text-destructive border-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 size={18} className="mr-2" /> Limpar todos os dados
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Limpar todos os dados</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta ação irá remover todos os registros e cadastros do sistema. Esta operação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearAllData} className="bg-destructive">
+                      Limpar Dados
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </CardContent>
         </Card>

@@ -1,7 +1,7 @@
 import React, { useState, ReactNode } from "react";
 import { ChurchContext } from "./ChurchContext";
 import { Class, SecretaryData } from "@/types/ChurchTypes";
-import { SECRETARY_CREDENTIALS } from "@/constants/secretaryCredentials";
+import { SECRETARY_CREDENTIALS, REGISTERED_SECRETARIES, addSecretary, clearSecretaries } from "@/constants/secretaryCredentials";
 import { createNewClass, createNewMember, createNewVisitor, updateClassInList } from "@/utils/churchDataUtils";
 
 interface ChurchProviderProps {
@@ -222,6 +222,7 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
   };
   
   const secretaryLogin = (username: string, password: string) => {
+    // Verificar credenciais padrão
     if (username === SECRETARY_CREDENTIALS.username && password === SECRETARY_CREDENTIALS.password) {
       const secretaryUserData = {
         username,
@@ -238,7 +239,38 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
       
       return true;
     }
+    
+    // Verificar secretários registrados
+    const foundSecretary = REGISTERED_SECRETARIES.find(
+      (secretary) => secretary.username === username && secretary.password === password
+    );
+    
+    if (foundSecretary) {
+      const secretaryUserData = {
+        username,
+        password,
+        name: foundSecretary.name,
+        isLoggedIn: true
+      };
+      
+      setIsSecretary(true);
+      setSecretaryData(secretaryUserData);
+      
+      localStorage.setItem("ebdIsSecretary", JSON.stringify(true));
+      localStorage.setItem("ebdSecretaryData", JSON.stringify(secretaryUserData));
+      
+      return true;
+    }
+    
     return false;
+  };
+
+  const registerSecretary = (username: string, password: string, name: string) => {
+    return addSecretary(username, password, name);
+  };
+
+  const clearAllSecretaries = () => {
+    clearSecretaries();
   };
   
   const secretaryLogout = () => {
@@ -289,6 +321,8 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
         switchClass,
         updateMemberBirthday,
         logout,
+        registerSecretary,
+        clearAllSecretaries,
       }}
     >
       {children}

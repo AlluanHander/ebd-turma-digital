@@ -19,6 +19,7 @@ const formSchema = z.object({
   churchName: z.string().min(3, "Nome da igreja deve ter pelo menos 3 caracteres"),
   fullName: z.string().min(3, "Nome completo deve ter pelo menos 3 caracteres"),
   email: z.string().email("E-mail inválido"),
+  username: z.string().min(3, "Nome de usuário deve ter pelo menos 3 caracteres"),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
   confirmPassword: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
   role: z.enum(["teacher", "secretary"], {
@@ -36,7 +37,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const Registration = () => {
   const navigate = useNavigate();
-  const { setChurchInfo, secretaryLogin } = useChurch();
+  const { setChurchInfo, secretaryLogin, registerSecretary } = useChurch();
   
   // Initialize the form
   const form = useForm<FormValues>({
@@ -45,6 +46,7 @@ const Registration = () => {
       churchName: localStorage.getItem("ebdChurchName") || "",
       fullName: "",
       email: "",
+      username: "",
       password: "",
       confirmPassword: "",
       role: "teacher",
@@ -75,14 +77,25 @@ const Registration = () => {
       
       navigate("/home");
     } else {
-      // In a real app, you would create an actual secretary account in a database
-      // For now, just show a toast and redirect to login
-      toast({
-        title: "Solicitação enviada!",
-        description: "Sua solicitação de cadastro como secretário foi enviada para análise.",
-      });
+      // Registrar novo secretário
+      const success = registerSecretary(data.username, data.password, data.fullName);
       
-      navigate("/login");
+      if (success) {
+        toast({
+          title: "Cadastro de secretário realizado com sucesso!",
+          description: "Sua conta de secretário foi criada.",
+        });
+        
+        // Fazer login automático como secretário
+        secretaryLogin(data.username, data.password);
+        navigate("/secretary");
+      } else {
+        toast({
+          title: "Erro no cadastro",
+          description: "Não foi possível criar a conta de secretário.",
+          variant: "destructive",
+        });
+      }
     }
   };
   
@@ -178,6 +191,31 @@ const Registration = () => {
                     </FormItem>
                   )}
                 />
+
+                {form.watch("role") === "secretary" && (
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome de Usuário</FormLabel>
+                        <div className="relative">
+                          <FormControl>
+                            <Input
+                              placeholder="Digite seu nome de usuário"
+                              className="pl-10"
+                              {...field}
+                            />
+                          </FormControl>
+                          <div className="absolute left-3 top-2.5 text-gray-500">
+                            <User size={18} />
+                          </div>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
                 
                 <FormField
                   control={form.control}

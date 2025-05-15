@@ -49,4 +49,6 @@ export interface ChurchContextType {
   switchClass: (classId: string) => void;
   updateMemberBirthday: (memberId: string, birthday: string) => void;
   logout: () => void;
+  registerSecretary: (username: string, password: string, name: string) => boolean;
+  clearAllSecretaries: () => void;
 }
