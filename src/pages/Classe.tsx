@@ -161,7 +161,7 @@ const Classe = () => {
             <VisitorsTab />
           </TabsContent>
           <TabsContent value="avisos">
-            <AnnouncementsTab />
+            <AnnouncementsTab isSecretary={false} />
           </TabsContent>
           <TabsContent value="relatorios">
             <ReportsTab />

@@ -4,13 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { useChurch } from "@/context";
 import NavBar from "@/components/NavBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, FileText, Users, Cake } from "lucide-react";
+import { Calendar, FileText, Users, Cake, MessageSquare } from "lucide-react";
 
 import ClassSelector from "@/components/secretary/ClassSelector";
 import ClassesTab from "@/components/secretary/ClassesTab";
 import AttendanceTab from "@/components/secretary/AttendanceTab";
 import StatisticsTab from "@/components/secretary/StatisticsTab";
 import BirthdaysTab from "@/components/secretary/BirthdaysTab";
+import AnnouncementsTab from "@/components/AnnouncementsTab";
 import CalendarView from "@/components/CalendarView";
 
 interface SecretaryLayoutProps {
@@ -75,7 +76,7 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
           {/* Main content area */}
           <div className="lg:w-3/4">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsList className="grid w-full grid-cols-5 mb-8">
                 <TabsTrigger value="classes" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   <span>Classes</span>
@@ -83,6 +84,10 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
                 <TabsTrigger value="attendance" className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
                   <span>Frequência</span>
+                </TabsTrigger>
+                <TabsTrigger value="announcements" className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Avisos</span>
                 </TabsTrigger>
                 <TabsTrigger value="statistics" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
@@ -103,6 +108,10 @@ const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
 
               <TabsContent value="attendance">
                 <AttendanceTab allClasses={allClasses} />
+              </TabsContent>
+
+              <TabsContent value="announcements">
+                <AnnouncementsTab isSecretary={true} />
               </TabsContent>
 
               <TabsContent value="statistics">
