@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useChurch } from "@/context/ChurchContext";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, Key, Lock, User, Trash2 } from "lucide-react";
@@ -17,7 +18,6 @@ import {
   DialogHeader, 
   DialogTitle, 
   DialogTrigger,
-  DialogClose
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -36,7 +36,7 @@ const Login = () => {
   const [churchName, setChurchName] = useState("");
   
   // Teacher login state
-  const [teacherName, setTeacherName] = useState("");
+  const [teacherEmail, setTeacherEmail] = useState("");
   const [teacherPassword, setTeacherPassword] = useState("");
   const [saveTeacherCredentials, setSaveTeacherCredentials] = useState(false);
   
@@ -51,7 +51,7 @@ const Login = () => {
   // Active tab
   const [activeTab, setActiveTab] = useState("teacher");
   
-  const { setChurchInfo, secretaryLogin, clearAllSecretaries } = useChurch();
+  const { secretaryLogin, teacherLogin, clearAllSecretaries, sendPasswordReset } = useChurch();
   const navigate = useNavigate();
 
   // Load saved credentials on component mount
@@ -63,8 +63,8 @@ const Login = () => {
 
     const savedTeacherCredentials = localStorage.getItem("ebdTeacherCredentials");
     if (savedTeacherCredentials) {
-      const { name, password } = JSON.parse(savedTeacherCredentials);
-      setTeacherName(name);
+      const { email, password } = JSON.parse(savedTeacherCredentials);
+      setTeacherEmail(email);
       setTeacherPassword(password);
       setSaveTeacherCredentials(true);
     }
@@ -81,7 +81,7 @@ const Login = () => {
   const handleTeacherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!churchName.trim() || !teacherName.trim() || !teacherPassword.trim()) {
+    if (!teacherEmail.trim() || !teacherPassword.trim()) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
@@ -93,30 +93,39 @@ const Login = () => {
     // Save credentials if checkbox is checked
     if (saveTeacherCredentials) {
       localStorage.setItem("ebdTeacherCredentials", JSON.stringify({
-        name: teacherName,
+        email: teacherEmail,
         password: teacherPassword
       }));
     } else {
       localStorage.removeItem("ebdTeacherCredentials");
     }
     
-    // Always save church name
-    localStorage.setItem("ebdChurchName", churchName);
+    // Always save church name if provided
+    if (churchName.trim()) {
+      localStorage.setItem("ebdChurchName", churchName);
+    }
 
-    // Set teacher info and sector (using teacher name as sector for now)
-    setChurchInfo(churchName, teacherName);
-
-    toast({
-      title: "Login realizado com sucesso!",
-      description: "Bem-vindo ao sistema EBD, Professor.",
-    });
-    navigate("/home");
+    const success = teacherLogin(teacherEmail, teacherPassword);
+    
+    if (success) {
+      toast({
+        title: "Login realizado com sucesso!",
+        description: "Bem-vindo ao sistema EBD, Professor.",
+      });
+      navigate("/classe");
+    } else {
+      toast({
+        title: "Erro no login",
+        description: "E-mail ou senha incorretos, ou você não tem salas atribuídas.",
+        variant: "destructive",
+      });
+    }
   };
   
   const handleSecretarySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!churchName.trim() || !username.trim() || !password.trim()) {
+    if (!username.trim() || !password.trim()) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
@@ -135,8 +144,10 @@ const Login = () => {
       localStorage.removeItem("ebdSecretaryCredentials");
     }
     
-    // Always save church name
-    localStorage.setItem("ebdChurchName", churchName);
+    // Always save church name if provided
+    if (churchName.trim()) {
+      localStorage.setItem("ebdChurchName", churchName);
+    }
     
     const success = secretaryLogin(username, password);
     
@@ -165,14 +176,23 @@ const Login = () => {
       return;
     }
 
-    // Simulate password reset email
-    toast({
-      title: "E-mail enviado!",
-      description: `Um link de redefinição de senha foi enviado para ${resetEmail}.`,
-    });
+    const success = sendPasswordReset(resetEmail);
     
-    // Clear email field
-    setResetEmail("");
+    if (success) {
+      toast({
+        title: "Solicitação enviada!",
+        description: `Uma solicitação de redefinição de senha foi enviada para ebdvilaelida2024@gmail.com com seus dados.`,
+      });
+      
+      // Clear email field
+      setResetEmail("");
+    } else {
+      toast({
+        title: "Erro no envio",
+        description: "Não foi possível processar sua solicitação.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClearAllData = () => {
@@ -181,9 +201,12 @@ const Login = () => {
     
     // Limpar localStorage
     localStorage.removeItem("ebdAllClasses");
+    localStorage.removeItem("ebdAllTeachers");
     localStorage.removeItem("ebdChurchData");
     localStorage.removeItem("ebdIsSecretary");
+    localStorage.removeItem("ebdIsTeacher");
     localStorage.removeItem("ebdSecretaryData");
+    localStorage.removeItem("ebdCurrentUser");
     localStorage.removeItem("ebdTeacherCredentials");
     localStorage.removeItem("ebdSecretaryCredentials");
     
@@ -209,10 +232,10 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
 
-          {/* Common field - Church Name */}
           <CardContent className="pt-6">
+            {/* Optional church name field */}
             <div className="grid gap-2 mb-4">
-              <Label htmlFor="churchName">Nome da Igreja</Label>
+              <Label htmlFor="churchName">Nome da Igreja (opcional)</Label>
               <Input
                 id="churchName"
                 placeholder="Ex: Igreja Batista Central"
@@ -235,17 +258,18 @@ const Login = () => {
                 <form onSubmit={handleTeacherSubmit}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="teacherName">Nome do Professor</Label>
+                      <Label htmlFor="teacherEmail">E-mail</Label>
                       <div className="relative">
                         <Input
-                          id="teacherName"
-                          placeholder="Digite seu nome"
-                          value={teacherName}
-                          onChange={(e) => setTeacherName(e.target.value)}
+                          id="teacherEmail"
+                          type="email"
+                          placeholder="professor@exemplo.com"
+                          value={teacherEmail}
+                          onChange={(e) => setTeacherEmail(e.target.value)}
                           className="pl-10"
                         />
                         <div className="absolute left-3 top-2.5 text-gray-500">
-                          <User size={18} />
+                          <Mail size={18} />
                         </div>
                       </div>
                     </div>
@@ -364,12 +388,12 @@ const Login = () => {
                   <DialogHeader>
                     <DialogTitle>Recuperação de Senha</DialogTitle>
                     <DialogDescription>
-                      Informe seu e-mail para receber um link de redefinição de senha.
+                      Informe seu e-mail e enviaremos suas informações para ebdvilaelida2024@gmail.com.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="resetEmail">E-mail</Label>
+                      <Label htmlFor="resetEmail">Seu E-mail</Label>
                       <div className="relative">
                         <Input
                           id="resetEmail"
@@ -384,9 +408,12 @@ const Login = () => {
                         </div>
                       </div>
                     </div>
+                    <p className="text-sm text-gray-600">
+                      Suas informações de recuperação serão enviadas para o e-mail administrativo: ebdvilaelida2024@gmail.com
+                    </p>
                   </div>
                   <DialogFooter>
-                    <Button onClick={handlePasswordReset}>Enviar link</Button>
+                    <Button onClick={handlePasswordReset}>Solicitar Recuperação</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>

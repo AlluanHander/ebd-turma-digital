@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useChurch } from "@/context/ChurchContext";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { User, Mail, Lock, Key, ChevronLeft } from "lucide-react";
 import { z } from "zod";
@@ -37,7 +37,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const Registration = () => {
   const navigate = useNavigate();
-  const { setChurchInfo, secretaryLogin, registerSecretary } = useChurch();
+  const { registerSecretary, secretaryLogin } = useChurch();
   
   // Initialize the form
   const form = useForm<FormValues>({
@@ -49,7 +49,7 @@ const Registration = () => {
       username: "",
       password: "",
       confirmPassword: "",
-      role: "teacher",
+      role: "secretary",
       agreeTerms: false
     },
   });
@@ -58,27 +58,9 @@ const Registration = () => {
     // Store the church name in localStorage
     localStorage.setItem("ebdChurchName", data.churchName);
     
-    // Handle registration based on selected role
-    if (data.role === "teacher") {
-      // Create teacher account
-      setChurchInfo(data.churchName, data.fullName);
-      
-      // Store teacher credentials if needed
-      localStorage.setItem("ebdTeacherCredentials", JSON.stringify({
-        name: data.fullName,
-        password: data.password,
-        email: data.email
-      }));
-      
-      toast({
-        title: "Cadastro realizado com sucesso!",
-        description: "Sua conta de professor foi criada.",
-      });
-      
-      navigate("/home");
-    } else {
+    if (data.role === "secretary") {
       // Registrar novo secretário
-      const success = registerSecretary(data.username, data.password, data.fullName);
+      const success = registerSecretary(data.username, data.password, data.fullName, data.email);
       
       if (success) {
         toast({
@@ -96,6 +78,12 @@ const Registration = () => {
           variant: "destructive",
         });
       }
+    } else {
+      toast({
+        title: "Cadastro de professor não disponível",
+        description: "Professores devem ser cadastrados pelo secretário.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -113,9 +101,9 @@ const Registration = () => {
         
         <Card className="w-full">
           <CardHeader className="ebd-gradient text-white rounded-t-lg">
-            <CardTitle className="text-xl font-semibold">Cadastro</CardTitle>
+            <CardTitle className="text-xl font-semibold">Cadastro de Secretário</CardTitle>
             <CardDescription className="text-white/80">
-              Crie sua conta para acessar o sistema EBD
+              Crie sua conta de secretário para acessar o sistema EBD
             </CardDescription>
           </CardHeader>
           
@@ -192,30 +180,28 @@ const Registration = () => {
                   )}
                 />
 
-                {form.watch("role") === "secretary" && (
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome de Usuário</FormLabel>
-                        <div className="relative">
-                          <FormControl>
-                            <Input
-                              placeholder="Digite seu nome de usuário"
-                              className="pl-10"
-                              {...field}
-                            />
-                          </FormControl>
-                          <div className="absolute left-3 top-2.5 text-gray-500">
-                            <User size={18} />
-                          </div>
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome de Usuário</FormLabel>
+                      <div className="relative">
+                        <FormControl>
+                          <Input
+                            placeholder="Digite seu nome de usuário"
+                            className="pl-10"
+                            {...field}
+                          />
+                        </FormControl>
+                        <div className="absolute left-3 top-2.5 text-gray-500">
+                          <User size={18} />
                         </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <FormField
                   control={form.control}
@@ -267,35 +253,6 @@ const Registration = () => {
                 
                 <FormField
                   control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Perfil de Acesso</FormLabel>
-                      <div className="grid grid-cols-2 gap-4 mt-2">
-                        <Button
-                          type="button"
-                          variant={field.value === "teacher" ? "default" : "outline"}
-                          className={field.value === "teacher" ? "bg-ebd-blue hover:bg-ebd-navy" : ""}
-                          onClick={() => form.setValue("role", "teacher")}
-                        >
-                          Professor
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={field.value === "secretary" ? "default" : "outline"}
-                          className={field.value === "secretary" ? "bg-ebd-blue hover:bg-ebd-navy" : ""}
-                          onClick={() => form.setValue("role", "secretary")}
-                        >
-                          Secretário
-                        </Button>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
                   name="agreeTerms"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-3">
@@ -317,7 +274,7 @@ const Registration = () => {
                 
                 <div className="pt-4 space-y-2">
                   <Button type="submit" className="w-full bg-ebd-blue hover:bg-ebd-navy">
-                    Cadastrar
+                    Cadastrar como Secretário
                   </Button>
                   <Button
                     type="button"

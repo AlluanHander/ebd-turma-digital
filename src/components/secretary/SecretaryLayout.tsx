@@ -1,18 +1,15 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { useChurch } from "@/context";
-import NavBar from "@/components/NavBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, FileText, Users, Cake, MessageSquare } from "lucide-react";
-
-import ClassSelector from "@/components/secretary/ClassSelector";
-import ClassesTab from "@/components/secretary/ClassesTab";
-import AttendanceTab from "@/components/secretary/AttendanceTab";
-import StatisticsTab from "@/components/secretary/StatisticsTab";
-import BirthdaysTab from "@/components/secretary/BirthdaysTab";
-import AnnouncementsTab from "@/components/AnnouncementsTab";
-import CalendarView from "@/components/CalendarView";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useChurch } from "@/context/ChurchContext";
+import NavBar from "@/components/NavBar";
+import AttendanceTab from "./AttendanceTab";
+import BirthdaysTab from "./BirthdaysTab";
+import ClassesTab from "./ClassesTab";
+import StatisticsTab from "./StatisticsTab";
+import TeachersTab from "./TeachersTab";
+import ClassSelector from "./ClassSelector";
 
 interface SecretaryLayoutProps {
   activeTab: string;
@@ -23,107 +20,98 @@ interface SecretaryLayoutProps {
   setCurrentWeek: (week: number) => void;
 }
 
-const SecretaryLayout: React.FC<SecretaryLayoutProps> = ({
+const SecretaryLayout = ({
   activeTab,
   setActiveTab,
   selectedClassId,
   setSelectedClassId,
   currentWeek,
   setCurrentWeek,
-}) => {
-  const { allClasses, switchClass, secretaryData, secretaryLogout } = useChurch();
-  const navigate = useNavigate();
-
-  const handleClassChange = (classId: string) => {
-    setSelectedClassId(classId);
-    switchClass(classId);
-  };
-
-  const handleLogout = () => {
-    secretaryLogout();
-    navigate("/");
-  };
+}: SecretaryLayoutProps) => {
+  const { secretaryData, secretaryLogout } = useChurch();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <NavBar isSecretary={true} secretaryName={secretaryData?.name || "Secretário"} onLogout={handleLogout} />
-
-      <div className="container mx-auto px-4 py-8 flex-1">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
+    <div className="min-h-screen bg-ebd-gray">
+      <NavBar
+        isSecretary={true}
+        secretaryName={secretaryData?.name}
+        onLogout={secretaryLogout}
+      />
+      
+      <div className="container mx-auto px-4 py-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-ebd-blue mb-2">
             Painel do Secretário
           </h1>
-          <p className="text-gray-600 mt-2">
-            Gerencie todas as classes da EBD
+          <p className="text-gray-600">
+            Gerencie todas as classes, professores e atividades da EBD
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left sidebar with class selection and calendar */}
-          <div className="lg:w-1/4 space-y-6">
-            <ClassSelector 
-              allClasses={allClasses}
-              selectedClassId={selectedClassId}
-              onClassChange={handleClassChange}
-            />
-            
-            <CalendarView 
-              currentWeek={currentWeek}
-              onWeekChange={setCurrentWeek}
-            />
-          </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="classes">Salas</TabsTrigger>
+            <TabsTrigger value="teachers">Professores</TabsTrigger>
+            <TabsTrigger value="attendance">Frequência</TabsTrigger>
+            <TabsTrigger value="birthdays">Aniversários</TabsTrigger>
+            <TabsTrigger value="statistics">Relatórios</TabsTrigger>
+          </TabsList>
 
-          {/* Main content area */}
-          <div className="lg:w-3/4">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-8">
-                <TabsTrigger value="classes" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  <span>Classes</span>
-                </TabsTrigger>
-                <TabsTrigger value="attendance" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>Frequência</span>
-                </TabsTrigger>
-                <TabsTrigger value="announcements" className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Avisos</span>
-                </TabsTrigger>
-                <TabsTrigger value="statistics" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  <span>Estatísticas</span>
-                </TabsTrigger>
-                <TabsTrigger value="birthdays" className="flex items-center gap-2">
-                  <Cake className="h-4 w-4" />
-                  <span>Aniversários</span>
-                </TabsTrigger>
-              </TabsList>
+          <TabsContent value="classes" className="space-y-6">
+            <ClassesTab />
+          </TabsContent>
 
-              <TabsContent value="classes">
-                <ClassesTab 
-                  allClasses={allClasses}
-                  switchClass={switchClass}
+          <TabsContent value="teachers" className="space-y-6">
+            <TeachersTab />
+          </TabsContent>
+
+          <TabsContent value="attendance" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Controle de Frequência</CardTitle>
+                <CardDescription>
+                  Selecione uma sala para gerenciar a frequência dos alunos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ClassSelector
+                  selectedClassId={selectedClassId}
+                  onClassSelect={setSelectedClassId}
                 />
-              </TabsContent>
+              </CardContent>
+            </Card>
+            
+            {selectedClassId && (
+              <AttendanceTab
+                currentWeek={currentWeek}
+                setCurrentWeek={setCurrentWeek}
+              />
+            )}
+          </TabsContent>
 
-              <TabsContent value="attendance">
-                <AttendanceTab allClasses={allClasses} />
-              </TabsContent>
+          <TabsContent value="birthdays" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Controle de Aniversários</CardTitle>
+                <CardDescription>
+                  Selecione uma sala para gerenciar os aniversários dos alunos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ClassSelector
+                  selectedClassId={selectedClassId}
+                  onClassSelect={setSelectedClassId}
+                />
+              </CardContent>
+            </Card>
+            
+            {selectedClassId && <BirthdaysTab />}
+          </TabsContent>
 
-              <TabsContent value="announcements">
-                <AnnouncementsTab isSecretary={true} />
-              </TabsContent>
-
-              <TabsContent value="statistics">
-                <StatisticsTab allClasses={allClasses} />
-              </TabsContent>
-              
-              <TabsContent value="birthdays">
-                <BirthdaysTab />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
+          <TabsContent value="statistics" className="space-y-6">
+            <StatisticsTab />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
