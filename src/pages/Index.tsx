@@ -1,28 +1,21 @@
 
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useChurch } from "@/context/ChurchContext";
+import { useChurch } from "@/context"; 
+import { useTeacher } from "@/context";
 
 const Index = () => {
-  const { churchData, setChurchInfo } = useChurch();
+  const { churchData } = useChurch();
+  const { teacherData } = useTeacher();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Try to load saved church name
-    const savedChurchName = localStorage.getItem("ebdChurchName");
-    
-    if (churchData) {
+    if (churchData || teacherData) {
       navigate("/home");
-    } else if (savedChurchName) {
-      // If we have a saved church name but no churchData,
-      // redirect to login page with the saved church name
-      navigate("/login");
     } else {
-      // If no saved data, go to registration for first access
-      // or login for returning users
       navigate("/login");
     }
-  }, [churchData, navigate, setChurchInfo]);
+  }, [churchData, teacherData, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center ebd-gradient">

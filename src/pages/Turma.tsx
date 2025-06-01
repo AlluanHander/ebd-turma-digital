@@ -13,12 +13,8 @@ import AttendanceTab from "@/components/AttendanceTab";
 import AnnouncementsTab from "@/components/AnnouncementsTab";
 import ReportsTab from "@/components/ReportsTab";
 import VisitorsTab from "@/components/VisitorsTab";
-import BirthdaysTab from "@/components/BirthdaysTab";
 import { useChurch } from "@/context/ChurchContext";
-import { Calendar, Home, MessageSquare, Users, UserPlus, Cake } from "lucide-react";
-import { getBirthdaysThisMonth } from "@/utils/churchDataUtils";
-import { Member } from "@/types/ChurchTypes";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, Home, MessageSquare, Users, UserPlus } from "lucide-react";
 
 interface LocationState {
   activeTab?: string;
@@ -28,13 +24,12 @@ interface TeacherFormValues {
   teacherName: string;
 }
 
-const Classe = () => {
+const Turma = () => {
   const { churchData, setTeacher } = useChurch();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("chamada");
   const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
-  const [birthdaysThisMonth, setBirthdaysThisMonth] = useState<Member[]>([]);
   const { toast } = useToast();
   const locationState = location.state as LocationState | null;
 
@@ -52,12 +47,6 @@ const Classe = () => {
 
     if (locationState?.activeTab) {
       setActiveTab(locationState.activeTab);
-    }
-
-    // Get birthdays in the current month
-    if (churchData.members) {
-      const birthdays = getBirthdaysThisMonth(churchData.members);
-      setBirthdaysThisMonth(birthdays);
     }
   }, [churchData, navigate, locationState]);
 
@@ -79,7 +68,7 @@ const Classe = () => {
       <div className="container mx-auto px-4 py-6 flex-1">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Gestão da Classe</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Gestão da Turma</h1>
             {churchData.teacher && (
               <p className="text-gray-600 mt-1">Professor: {churchData.teacher}</p>
             )}
@@ -104,35 +93,8 @@ const Classe = () => {
           </div>
         </div>
 
-        {birthdaysThisMonth.length > 0 && (
-          <Card className="mb-6 border-l-4 border-l-blue-500">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <Cake className="h-5 w-5 text-blue-500" />
-                Aniversariantes deste mês
-              </CardTitle>
-              <CardDescription>
-                Alunos da sua classe que fazem aniversário neste mês
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-1">
-                {birthdaysThisMonth.map(member => (
-                  <li key={member.id} className="flex items-center gap-2">
-                    <Cake className="h-4 w-4 text-blue-400" />
-                    <span>{member.name}</span>
-                    <span className="text-gray-500 text-sm">
-                      {member.birthday}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
             <TabsTrigger value="chamada" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Chamada</span>
@@ -149,10 +111,6 @@ const Classe = () => {
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Relatórios</span>
             </TabsTrigger>
-            <TabsTrigger value="aniversarios" className="flex items-center gap-2">
-              <Cake className="h-4 w-4" />
-              <span className="hidden sm:inline">Aniversários</span>
-            </TabsTrigger>
           </TabsList>
           <TabsContent value="chamada">
             <AttendanceTab />
@@ -161,13 +119,10 @@ const Classe = () => {
             <VisitorsTab />
           </TabsContent>
           <TabsContent value="avisos">
-            <AnnouncementsTab isSecretary={false} />
+            <AnnouncementsTab />
           </TabsContent>
           <TabsContent value="relatorios">
             <ReportsTab />
-          </TabsContent>
-          <TabsContent value="aniversarios">
-            <BirthdaysTab />
           </TabsContent>
         </Tabs>
       </div>
@@ -206,4 +161,4 @@ const Classe = () => {
   );
 };
 
-export default Classe;
+export default Turma;

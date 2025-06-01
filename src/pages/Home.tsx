@@ -105,7 +105,7 @@ const Home = () => {
 
         <Card className="mb-8">
           <CardHeader className="bg-ebd-blue bg-opacity-10 border-b border-ebd-blue border-opacity-20">
-            <CardTitle className="text-ebd-blue">Gestão da Classe</CardTitle>
+            <CardTitle className="text-ebd-blue">Gestão da Turma</CardTitle>
             <CardDescription>
               Gerencie sua turma de Escola Bíblica Dominical
             </CardDescription>
@@ -127,7 +127,7 @@ const Home = () => {
                 <CardFooter>
                   <Button 
                     className="w-full bg-ebd-blue hover:bg-ebd-navy"
-                    onClick={() => navigate("/classe", { state: { activeTab: "chamada" } })}
+                    onClick={() => navigate("/turma", { state: { activeTab: "chamada" } })}
                   >
                     Acessar
                   </Button>
@@ -149,7 +149,7 @@ const Home = () => {
                 <CardFooter>
                   <Button 
                     className="w-full bg-ebd-blue hover:bg-ebd-navy"
-                    onClick={() => navigate("/classe", { state: { activeTab: "avisos" } })}
+                    onClick={() => navigate("/turma", { state: { activeTab: "avisos" } })}
                   >
                     Acessar
                   </Button>
@@ -171,7 +171,7 @@ const Home = () => {
                 <CardFooter>
                   <Button 
                     className="w-full bg-ebd-blue hover:bg-ebd-navy"
-                    onClick={() => navigate("/classe", { state: { activeTab: "relatorios" } })}
+                    onClick={() => navigate("/turma", { state: { activeTab: "relatorios" } })}
                   >
                     Acessar
                   </Button>

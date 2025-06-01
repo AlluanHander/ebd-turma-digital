@@ -17,9 +17,9 @@ const ClassesTab: React.FC<ClassesTabProps> = ({ allClasses, switchClass }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Todas as Classes</CardTitle>
+        <CardTitle>Todas as Turmas</CardTitle>
         <CardDescription>
-          Visão geral de todas as classes cadastradas
+          Visão geral de todas as turmas cadastradas
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -39,7 +39,7 @@ const ClassesTab: React.FC<ClassesTabProps> = ({ allClasses, switchClass }) => {
               {allClasses.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-4 text-gray-500">
-                    Nenhuma classe cadastrada ainda
+                    Nenhuma turma cadastrada ainda
                   </TableCell>
                 </TableRow>
               ) : (
@@ -55,7 +55,7 @@ const ClassesTab: React.FC<ClassesTabProps> = ({ allClasses, switchClass }) => {
                         size="sm"
                         onClick={() => {
                           switchClass(cls.id);
-                          navigate("/classe");
+                          navigate("/turma");
                         }}
                       >
                         Gerenciar

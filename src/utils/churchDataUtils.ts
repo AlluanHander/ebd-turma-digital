@@ -13,12 +13,11 @@ export const createNewClass = (name: string, sector: string): Class => {
   };
 };
 
-export const createNewMember = (name: string, birthday?: string): Member => {
+export const createNewMember = (name: string): Member => {
   return {
     id: Date.now().toString(),
     name,
     attendance: Array(13).fill(false),
-    birthday,
   };
 };
 
@@ -34,36 +33,4 @@ export const updateClassInList = (classList: Class[], updatedClass: Class): Clas
   return classList.map(classItem => 
     classItem.id === updatedClass.id ? updatedClass : classItem
   );
-};
-
-export const getBirthdaysThisMonth = (members: Member[]): Member[] => {
-  if (!members || members.length === 0) return [];
-  
-  const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-indexed
-  
-  return members.filter(member => {
-    if (!member.birthday) return false;
-    
-    // Extract month from birthday (assuming format is DD/MM/YYYY)
-    const birthdayMonth = parseInt(member.birthday.split('/')[1]);
-    return birthdayMonth === currentMonth;
-  });
-};
-
-export const getAllBirthdaysThisMonth = (classes: Class[]): { member: Member; className: string }[] => {
-  if (!classes || classes.length === 0) return [];
-  
-  const result: { member: Member; className: string }[] = [];
-  
-  classes.forEach(classItem => {
-    const birthdayMembers = getBirthdaysThisMonth(classItem.members);
-    birthdayMembers.forEach(member => {
-      result.push({
-        member,
-        className: classItem.sector
-      });
-    });
-  });
-  
-  return result;
 };
