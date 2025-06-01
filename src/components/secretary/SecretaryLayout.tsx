@@ -28,7 +28,12 @@ const SecretaryLayout = ({
   currentWeek,
   setCurrentWeek,
 }: SecretaryLayoutProps) => {
-  const { secretaryData, secretaryLogout } = useChurch();
+  const { secretaryData, secretaryLogout, allClasses, switchClass } = useChurch();
+
+  const handleClassChange = (classId: string) => {
+    setSelectedClassId(classId);
+    switchClass(classId);
+  };
 
   return (
     <div className="min-h-screen bg-ebd-gray">
@@ -58,7 +63,7 @@ const SecretaryLayout = ({
           </TabsList>
 
           <TabsContent value="classes" className="space-y-6">
-            <ClassesTab />
+            <ClassesTab allClasses={allClasses} switchClass={switchClass} />
           </TabsContent>
 
           <TabsContent value="teachers" className="space-y-6">
@@ -75,17 +80,15 @@ const SecretaryLayout = ({
               </CardHeader>
               <CardContent>
                 <ClassSelector
+                  allClasses={allClasses}
                   selectedClassId={selectedClassId}
-                  onClassSelect={setSelectedClassId}
+                  onClassChange={handleClassChange}
                 />
               </CardContent>
             </Card>
             
             {selectedClassId && (
-              <AttendanceTab
-                currentWeek={currentWeek}
-                setCurrentWeek={setCurrentWeek}
-              />
+              <AttendanceTab allClasses={allClasses} />
             )}
           </TabsContent>
 
@@ -99,8 +102,9 @@ const SecretaryLayout = ({
               </CardHeader>
               <CardContent>
                 <ClassSelector
+                  allClasses={allClasses}
                   selectedClassId={selectedClassId}
-                  onClassSelect={setSelectedClassId}
+                  onClassChange={handleClassChange}
                 />
               </CardContent>
             </Card>
@@ -109,7 +113,7 @@ const SecretaryLayout = ({
           </TabsContent>
 
           <TabsContent value="statistics" className="space-y-6">
-            <StatisticsTab />
+            <StatisticsTab allClasses={allClasses} />
           </TabsContent>
         </Tabs>
       </div>
