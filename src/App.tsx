@@ -6,21 +6,46 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ChurchProvider } from "./context/ChurchProvider";
 import { InventoryProvider } from "./context/InventoryContext";
-import { TeacherProvider } from "./context/TeacherContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import Registration from "./pages/Registration";
 import Home from "./pages/Home";
-import Turma from "./pages/Turma";
+import Classe from "./pages/Classe";
 import Secretary from "./pages/Secretary";
 import NotFound from "./pages/NotFound";
+import { useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
+
+// Initialize capacitor if available
+const initCapacitor = async () => {
+  if (Capacitor && Capacitor.isPluginAvailable('SplashScreen')) {
+    try {
+      const { SplashScreen } = await import('@capacitor/splash-screen');
+      await SplashScreen.hide();
+      
+      // Set status bar style if available
+      if (Capacitor.isPluginAvailable('StatusBar')) {
+        const { StatusBar, Style } = await import('@capacitor/status-bar');
+        // Fix: Use the proper enum value from the Style export
+        await StatusBar.setStyle({ style: Style.Dark });
+      }
+    } catch (e) {
+      console.error('Error initializing Capacitor plugins', e);
+    }
+  }
+};
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ChurchProvider>
-      <InventoryProvider>
-        <TeacherProvider>
+const App = () => {
+  useEffect(() => {
+    initCapacitor();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ChurchProvider>
+        <InventoryProvider>
           <TooltipProvider>
             <Toaster />
             <Sonner />
@@ -28,17 +53,19 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/registration" element={<Registration />} />
                 <Route path="/home" element={<Home />} />
-                <Route path="/turma" element={<Turma />} />
+                <Route path="/classe" element={<Classe />} />
+                <Route path="/turma" element={<Classe />} /> {/* Add this route to handle redirects from old URLs */}
                 <Route path="/secretary" element={<Secretary />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
           </TooltipProvider>
-        </TeacherProvider>
-      </InventoryProvider>
-    </ChurchProvider>
-  </QueryClientProvider>
-);
+        </InventoryProvider>
+      </ChurchProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

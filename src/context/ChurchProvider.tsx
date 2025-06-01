@@ -1,8 +1,7 @@
-
 import React, { useState, ReactNode } from "react";
 import { ChurchContext } from "./ChurchContext";
-import { Class, SecretaryData } from "@/types/ChurchTypes";
-import { SECRETARY_CREDENTIALS } from "@/constants/secretaryCredentials";
+import { Class, SecretaryData, Teacher } from "@/types/ChurchTypes";
+import { SECRETARY_CREDENTIALS, REGISTERED_SECRETARIES, addSecretary, clearSecretaries } from "@/constants/secretaryCredentials";
 import { createNewClass, createNewMember, createNewVisitor, updateClassInList } from "@/utils/churchDataUtils";
 
 interface ChurchProviderProps {
@@ -19,15 +18,30 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
     const savedClasses = localStorage.getItem("ebdAllClasses");
     return savedClasses ? JSON.parse(savedClasses) : [];
   });
+
+  const [allTeachers, setAllTeachers] = useState<Teacher[]>(() => {
+    const savedTeachers = localStorage.getItem("ebdAllTeachers");
+    return savedTeachers ? JSON.parse(savedTeachers) : [];
+  });
   
   const [isSecretary, setIsSecretary] = useState<boolean>(() => {
     const savedSecretaryStatus = localStorage.getItem("ebdIsSecretary");
     return savedSecretaryStatus ? JSON.parse(savedSecretaryStatus) : false;
   });
+
+  const [isTeacher, setIsTeacher] = useState<boolean>(() => {
+    const savedTeacherStatus = localStorage.getItem("ebdIsTeacher");
+    return savedTeacherStatus ? JSON.parse(savedTeacherStatus) : false;
+  });
   
   const [secretaryData, setSecretaryData] = useState<SecretaryData | null>(() => {
     const savedSecretaryData = localStorage.getItem("ebdSecretaryData");
     return savedSecretaryData ? JSON.parse(savedSecretaryData) : null;
+  });
+
+  const [currentUser, setCurrentUser] = useState<SecretaryData | Teacher | null>(() => {
+    const savedUser = localStorage.getItem("ebdCurrentUser");
+    return savedUser ? JSON.parse(savedUser) : null;
   });
 
   const setChurchInfo = (name: string, sector: string) => {
@@ -40,17 +54,40 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
     
     localStorage.setItem("ebdChurchData", JSON.stringify(newClassData));
     localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
-    localStorage.setItem("ebdIsSecretary", JSON.stringify(false));
   };
 
-  const addMember = (name: string) => {
+  const addMember = (name: string, birthday?: string) => {
     if (!churchData) return;
     
-    const newMember = createNewMember(name);
+    const newMember = createNewMember(name, birthday);
     
     const updatedChurchData = {
       ...churchData,
       members: [...churchData.members, newMember],
+    };
+    
+    setChurchData(updatedChurchData);
+    
+    const updatedClasses = updateClassInList(allClasses, updatedChurchData);
+    setAllClasses(updatedClasses);
+    
+    localStorage.setItem("ebdChurchData", JSON.stringify(updatedChurchData));
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
+  };
+
+  const updateMemberBirthday = (memberId: string, birthday: string) => {
+    if (!churchData) return;
+    
+    const updatedMembers = churchData.members.map(member => {
+      if (member.id === memberId) {
+        return { ...member, birthday };
+      }
+      return member;
+    });
+    
+    const updatedChurchData = {
+      ...churchData,
+      members: updatedMembers,
     };
     
     setChurchData(updatedChurchData);
@@ -199,6 +236,7 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
   };
   
   const secretaryLogin = (username: string, password: string) => {
+    // Verificar credenciais padrão
     if (username === SECRETARY_CREDENTIALS.username && password === SECRETARY_CREDENTIALS.password) {
       const secretaryUserData = {
         username,
@@ -208,22 +246,163 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
       };
       
       setIsSecretary(true);
+      setIsTeacher(false);
       setSecretaryData(secretaryUserData);
+      setCurrentUser(secretaryUserData);
       
       localStorage.setItem("ebdIsSecretary", JSON.stringify(true));
+      localStorage.setItem("ebdIsTeacher", JSON.stringify(false));
       localStorage.setItem("ebdSecretaryData", JSON.stringify(secretaryUserData));
+      localStorage.setItem("ebdCurrentUser", JSON.stringify(secretaryUserData));
       
       return true;
     }
+    
+    // Verificar secretários registrados
+    const foundSecretary = REGISTERED_SECRETARIES.find(
+      (secretary) => secretary.username === username && secretary.password === password
+    );
+    
+    if (foundSecretary) {
+      const secretaryUserData = {
+        username,
+        password,
+        name: foundSecretary.name,
+        isLoggedIn: true
+      };
+      
+      setIsSecretary(true);
+      setIsTeacher(false);
+      setSecretaryData(secretaryUserData);
+      setCurrentUser(secretaryUserData);
+      
+      localStorage.setItem("ebdIsSecretary", JSON.stringify(true));
+      localStorage.setItem("ebdIsTeacher", JSON.stringify(false));
+      localStorage.setItem("ebdSecretaryData", JSON.stringify(secretaryUserData));
+      localStorage.setItem("ebdCurrentUser", JSON.stringify(secretaryUserData));
+      
+      return true;
+    }
+    
     return false;
+  };
+
+  const teacherLogin = (email: string, password: string) => {
+    const foundTeacher = allTeachers.find(
+      (teacher) => teacher.email === email && teacher.password === password
+    );
+    
+    if (foundTeacher) {
+      setIsTeacher(true);
+      setIsSecretary(false);
+      setCurrentUser(foundTeacher);
+      setSecretaryData(null);
+      
+      // Filtrar classes do professor
+      const teacherClasses = allClasses.filter(cls => 
+        foundTeacher.assignedClasses.includes(cls.id)
+      );
+      
+      if (teacherClasses.length > 0) {
+        setChurchData(teacherClasses[0]);
+        localStorage.setItem("ebdChurchData", JSON.stringify(teacherClasses[0]));
+      }
+      
+      localStorage.setItem("ebdIsTeacher", JSON.stringify(true));
+      localStorage.setItem("ebdIsSecretary", JSON.stringify(false));
+      localStorage.setItem("ebdCurrentUser", JSON.stringify(foundTeacher));
+      localStorage.removeItem("ebdSecretaryData");
+      
+      return true;
+    }
+    
+    return false;
+  };
+
+  const registerSecretary = (username: string, password: string, name: string, email: string) => {
+    return addSecretary(username, password, name);
+  };
+
+  const registerTeacher = (name: string, email: string, password: string, assignedClasses: string[]) => {
+    const newTeacher: Teacher = {
+      id: Date.now().toString(),
+      name,
+      email,
+      password,
+      assignedClasses
+    };
+    
+    const updatedTeachers = [...allTeachers, newTeacher];
+    setAllTeachers(updatedTeachers);
+    localStorage.setItem("ebdAllTeachers", JSON.stringify(updatedTeachers));
+    
+    return true;
+  };
+
+  const updateTeacher = (teacherId: string, name: string, email: string, assignedClasses: string[]) => {
+    const updatedTeachers = allTeachers.map(teacher => {
+      if (teacher.id === teacherId) {
+        return { ...teacher, name, email, assignedClasses };
+      }
+      return teacher;
+    });
+    
+    setAllTeachers(updatedTeachers);
+    localStorage.setItem("ebdAllTeachers", JSON.stringify(updatedTeachers));
+    
+    return true;
+  };
+
+  const removeTeacher = (teacherId: string) => {
+    const updatedTeachers = allTeachers.filter(teacher => teacher.id !== teacherId);
+    setAllTeachers(updatedTeachers);
+    localStorage.setItem("ebdAllTeachers", JSON.stringify(updatedTeachers));
+    
+    return true;
+  };
+
+  const createClass = (churchName: string, sector: string, teacherId?: string) => {
+    const newClass = createNewClass(churchName, sector);
+    if (teacherId) {
+      newClass.teacherId = teacherId;
+      // Find teacher and add class to their assigned classes
+      updateTeacher(teacherId, allTeachers.find(t => t.id === teacherId)?.name || '', 
+                   allTeachers.find(t => t.id === teacherId)?.email || '',
+                   [...(allTeachers.find(t => t.id === teacherId)?.assignedClasses || []), newClass.id]);
+    }
+    
+    const updatedClasses = [...allClasses, newClass];
+    setAllClasses(updatedClasses);
+    localStorage.setItem("ebdAllClasses", JSON.stringify(updatedClasses));
+    
+    return newClass.id;
+  };
+
+  const clearAllSecretaries = () => {
+    clearSecretaries();
+  };
+
+  const sendPasswordReset = (email: string) => {
+    console.log(`Password reset email sent to: ebdvilaelida2024@gmail.com for user: ${email}`);
+    return true;
   };
   
   const secretaryLogout = () => {
     setIsSecretary(false);
     setSecretaryData(null);
+    setCurrentUser(null);
     
     localStorage.setItem("ebdIsSecretary", JSON.stringify(false));
     localStorage.removeItem("ebdSecretaryData");
+    localStorage.removeItem("ebdCurrentUser");
+  };
+
+  const teacherLogout = () => {
+    setIsTeacher(false);
+    setCurrentUser(null);
+    
+    localStorage.setItem("ebdIsTeacher", JSON.stringify(false));
+    localStorage.removeItem("ebdCurrentUser");
   };
   
   const switchClass = (classId: string) => {
@@ -236,13 +415,16 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
 
   const logout = () => {
     setChurchData(null);
-    // Do not clear allClasses when logging out
     setIsSecretary(false);
+    setIsTeacher(false);
     setSecretaryData(null);
+    setCurrentUser(null);
     
     localStorage.removeItem("ebdChurchData");
     localStorage.setItem("ebdIsSecretary", JSON.stringify(false));
+    localStorage.setItem("ebdIsTeacher", JSON.stringify(false));
     localStorage.removeItem("ebdSecretaryData");
+    localStorage.removeItem("ebdCurrentUser");
   };
 
   return (
@@ -250,7 +432,10 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
       value={{
         churchData,
         allClasses,
+        allTeachers,
         isSecretary,
+        isTeacher,
+        currentUser,
         secretaryData,
         setChurchInfo,
         addMember,
@@ -262,9 +447,19 @@ export const ChurchProvider = ({ children }: ChurchProviderProps) => {
         addVisitor,
         removeVisitor,
         secretaryLogin,
+        teacherLogin,
         secretaryLogout,
+        teacherLogout,
         switchClass,
+        updateMemberBirthday,
         logout,
+        registerSecretary,
+        registerTeacher,
+        updateTeacher,
+        removeTeacher,
+        createClass,
+        clearAllSecretaries,
+        sendPasswordReset,
       }}
     >
       {children}
